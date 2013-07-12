@@ -192,7 +192,10 @@ static memcached_return_t memcached_send_binary(Memcached *ptr,
   memcached_return_t rc;
   if ((rc= memcached_vdo(server, vector, 5, flush)) != MEMCACHED_SUCCESS)
   {
-    memcached_io_reset(server);
+    if (rc == MEMCACHED_WRITE_FAILURE)
+    {
+      memcached_io_reset(server);
+    }
 
 #if 0
     if (memcached_has_error(ptr))
