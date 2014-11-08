@@ -224,7 +224,17 @@ memcached_result_st *memcached_fetch_result(memcached_st *ptr,
     }
   }
 
-  if (*error == MEMCACHED_NOTFOUND and result->count)
+  if (connection_failures)
+  {
+    /*
+        If we have a connection failure to some servers, the caller may
+        wish to treat that differently to getting a definitive NOT_FOUND
+        from all servers, so return MEMCACHED_CONNECTION_FAILURE to allow
+        that.
+        */
+    *error= MEMCACHED_CONNECTION_FAILURE;
+  }
+  else if (*error == MEMCACHED_NOTFOUND and result->count)
   {
     *error= MEMCACHED_END;
   }
@@ -235,16 +245,6 @@ memcached_result_st *memcached_fetch_result(memcached_st *ptr,
   else if (*error == MEMCACHED_MAXIMUM_RETURN) // while() loop was never entered
   {
     *error= MEMCACHED_NOTFOUND;
-  }
-  else if (connection_failures)
-  {
-    /*  
-        If we have a connection failure to some servers, the caller may
-        wish to treat that differently to getting a definitive NOT_FOUND
-        from all servers, so return MEMCACHED_CONNECTION_FAILURE to allow
-        that. 
-        */
-    *error= MEMCACHED_CONNECTION_FAILURE;
   }
   else if (*error == MEMCACHED_SUCCESS)
   {
