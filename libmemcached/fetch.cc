@@ -224,8 +224,24 @@ memcached_result_st *memcached_fetch_result(memcached_st *ptr,
     }
   }
 
-  if (connection_failures)
+  if (*error == MEMCACHED_NOTFOUND and result->count)
   {
+    /* TODO: I'd love to know if we're hitting this code path and what it means... is this a partially returned multiget maybe? */
+    *error= MEMCACHED_END;
+  }
+  else if (*error == MEMCACHED_MAXIMUM_RETURN and result->count)
+  {
+    /* TODO: Ditto.  What is this?  We finish the loop, have a result, but didn't get a regular error? */ 
+    *error= MEMCACHED_END;
+  }
+  else if (*error == MEMCACHED_MAXIMUM_RETURN) // while() loop was never entered
+  {
+    /* seems odd to use MEMCACHED_NOTFOUND here, since it's really a client error, so let's change that... */
+    *error= MEMCACHED_CLIENT_ERROR;
+  }
+  else if (connection_failures)
+  {
+    /* TODO: This maybe should be higher up in the else stack, depending on what the two MEMCACHED_END results are, above... */
     /*
         If we have a connection failure to some servers, the caller may
         wish to treat that differently to getting a definitive NOT_FOUND
@@ -233,18 +249,6 @@ memcached_result_st *memcached_fetch_result(memcached_st *ptr,
         that.
         */
     *error= MEMCACHED_CONNECTION_FAILURE;
-  }
-  else if (*error == MEMCACHED_NOTFOUND and result->count)
-  {
-    *error= MEMCACHED_END;
-  }
-  else if (*error == MEMCACHED_MAXIMUM_RETURN and result->count)
-  {
-    *error= MEMCACHED_END;
-  }
-  else if (*error == MEMCACHED_MAXIMUM_RETURN) // while() loop was never entered
-  {
-    *error= MEMCACHED_NOTFOUND;
   }
   else if (*error == MEMCACHED_SUCCESS)
   {
