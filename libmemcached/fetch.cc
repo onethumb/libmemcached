@@ -226,23 +226,27 @@ memcached_result_st *memcached_fetch_result(memcached_st *ptr,
 
   if (*error == MEMCACHED_NOTFOUND and result->count)
   {
+    /* TODO: I'd love to know if we're hitting this code path and what it means... is this a partially returned multiget maybe? */
     *error= MEMCACHED_END;
   }
   else if (*error == MEMCACHED_MAXIMUM_RETURN and result->count)
   {
+    /* TODO: Ditto.  What is this?  We finish the loop, have a result, but didn't get a regular error? */ 
     *error= MEMCACHED_END;
   }
   else if (*error == MEMCACHED_MAXIMUM_RETURN) // while() loop was never entered
   {
-    *error= MEMCACHED_NOTFOUND;
+    /* seems odd to use MEMCACHED_NOTFOUND here, since it's really a client error, so let's change that... */
+    *error= MEMCACHED_CLIENT_ERROR;
   }
   else if (connection_failures)
   {
-    /*  
+    /* TODO: This maybe should be higher up in the else stack, depending on what the two MEMCACHED_END results are, above... */
+    /*
         If we have a connection failure to some servers, the caller may
         wish to treat that differently to getting a definitive NOT_FOUND
         from all servers, so return MEMCACHED_CONNECTION_FAILURE to allow
-        that. 
+        that.
         */
     *error= MEMCACHED_CONNECTION_FAILURE;
   }
@@ -251,8 +255,9 @@ memcached_result_st *memcached_fetch_result(memcached_st *ptr,
     *error= MEMCACHED_END;
   }
   else if (result->count == 0)
-  {
-    *error= MEMCACHED_NOTFOUND;
+  { 
+    /* Is it possible we're getting some other error but overriding it to MEMCACHED_NOTFOUND here? Let's disable and see... */
+    /* *error= MEMCACHED_NOTFOUND; */
   }
 
   /* We have completed reading data */

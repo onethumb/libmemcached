@@ -110,10 +110,12 @@ char *memcached_get_by_key(memcached_st *shell,
   assert_msg(ptr->query_id == query_id +1, "Programmer error, the query_id was not incremented.");
 
   /* This is for historical reasons */
+  /*
   if (*error == MEMCACHED_END)
   {
     *error= MEMCACHED_NOTFOUND;
   }
+  */
   if (value == NULL)
   {
     if (ptr->get_key_failure and *error == MEMCACHED_NOTFOUND)
