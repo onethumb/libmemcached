@@ -389,7 +389,7 @@ static bool io_flush(memcached_instance_st* instance,
       case EPIPE:
       default:
         memcached_quit_server(instance, true);
-        error= memcached_set_errno(*instance, local_errno, MEMCACHED_AT);
+        error= memcached_set_errno(*instance, MEMCACHED_CONNECTION_FAILURE, MEMCACHED_AT);
         WATCHPOINT_ASSERT(instance->fd == INVALID_SOCKET);
         return false;
       }
@@ -463,7 +463,7 @@ static memcached_return_t _io_fill(memcached_instance_st* instance)
       case ECONNREFUSED:
       default:
         memcached_quit_server(instance, true);
-        memcached_set_errno(*instance, local_errno, MEMCACHED_AT);
+        memcached_set_errno(*instance, MEMCACHED_CONNECTION_FAILURE, MEMCACHED_AT);
         break;
       }
 
