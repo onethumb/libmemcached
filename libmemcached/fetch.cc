@@ -255,8 +255,9 @@ memcached_result_st *memcached_fetch_result(memcached_st *ptr,
     *error= MEMCACHED_END;
   }
   else if (result->count == 0)
-  {
-    *error= MEMCACHED_NOTFOUND;
+  { 
+    /* Is it possible we're getting some other error but overriding it to MEMCACHED_NOTFOUND here? Let's disable and see... */
+    /* *error= MEMCACHED_NOTFOUND; */
   }
 
   /* We have completed reading data */
